@@ -11,7 +11,7 @@ export async function login(
       email: email,
       password: password,
     }
-  );
+  ); 
 }
 
 export function logout(): void {
