@@ -1,4 +1,5 @@
 import { LogInTypeRes } from "../appTypes/logInType";
+import { ProfileResponse } from "../appTypes/profileType";
 import { AxiosResponse, http } from "./http.service";
 
 export async function login(
@@ -11,11 +12,20 @@ export async function login(
       email: email,
       password: password,
     }
-  ); 
+  );
 }
 
 export function logout(): void {
-    localStorage.removeItem('token')
+  localStorage.removeItem("token");
 }
 
-export function getProfile() {}
+export async function getProfile(): Promise<AxiosResponse<ProfileResponse> | null> {
+  const token = JSON.parse(localStorage.getItem("token")!) as LogInTypeRes;
+  if (!token) {
+    return null;
+  }
+  return await http.get<ProfileResponse>(
+    "https://api.codingthailand.com/api/profile",
+    { headers: { Authorization: "Bearer " + token.access_token } }
+  );
+}

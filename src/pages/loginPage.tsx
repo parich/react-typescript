@@ -18,9 +18,15 @@ import { useForm } from "react-hook-form";
 import { LoginFormInputType } from "../appTypes/loginFormInputType";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useAppDispatch } from "../reduxToolkit/hooks";
+import { loginThunk } from "../reduxToolkit/auth/authSlice";
+import { LogInTypeResError } from "../appTypes/logInType";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const toast = useToast();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   // schema validation
   const schema = yup.object().shape({
@@ -44,16 +50,25 @@ export default function LoginPage() {
     mode: "all",
   });
 
-  const onSubmit = (data: LoginFormInputType) => {
-    console.log(data);
-    toast({
-      title: "Login Success.",
-      description: JSON.stringify(data),
-      status: "success",
-      duration: 9000,
-      isClosable: true,
-      position: "top-right",
-    });
+  const onSubmit = async (data: LoginFormInputType) => {
+    //console.log(data);
+    try {
+      const result = await dispatch(loginThunk(data)).unwrap();
+      //console.log(result.access_token);
+      if (result.access_token) {
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
+      let err: LogInTypeResError = error;
+      toast({
+        title: "Login Success.",
+        description: err.message,
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
   };
 
   return (
